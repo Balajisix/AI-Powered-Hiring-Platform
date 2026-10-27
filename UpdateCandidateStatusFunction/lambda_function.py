@@ -12,14 +12,14 @@ STATE_MACHINE_ARN = "arn:aws:states:us-east-1:594862215159:stateMachine:TechInte
 
 def lambda_handler(event, context):
     try:
-        # 📌 Get candidate ID
+        # Get candidate ID
         candidate_id = event['pathParameters']['id']
 
-        # 🔐 Logged-in user
+        # Logged-in user
         claims = event['requestContext']['authorizer']['jwt']['claims']
         evaluator_email = claims.get('email', 'Unknown Evaluator')
 
-        # 📥 Request body
+        # Request body
         body = json.loads(event.get('body', '{}'))
         new_status = body.get('status')
         tech_notes = body.get('tech_notes')
@@ -35,7 +35,7 @@ def lambda_handler(event, context):
                 "body": json.dumps({"error": "New status is required."})
             }
 
-        # 🧠 Build update query
+        # Build update query
         update_expr = "SET application_status = :s"
         expr_values = {':s': new_status}
 
@@ -45,16 +45,16 @@ def lambda_handler(event, context):
             expr_values[':te'] = evaluator_email
             expr_values[':td'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        # 🔄 Update DB
+        # Update DB
         table.update_item(
             Key={'candidate_id': candidate_id},
             UpdateExpression=update_expr,
             ExpressionAttributeValues=expr_values
         )
 
-        print("✅ DB Updated")
+        print("DB Updated")
 
-        # 📥 Fetch candidate details
+        # Fetch candidate details
         candidate = table.get_item(
             Key={'candidate_id': candidate_id}
         ).get('Item', {})
@@ -65,7 +65,7 @@ def lambda_handler(event, context):
         print("Candidate:", candidate_name, candidate_email)
 
         if new_status and new_status.strip().lower() == "pending tech review" and tech_email:
-            print("🚀 Triggering Step Function")
+            print("Triggering Step Function")
 
             stepfunctions.start_execution(
                 stateMachineArn=STATE_MACHINE_ARN,
@@ -77,7 +77,7 @@ def lambda_handler(event, context):
                 })
             )
         elif new_status and new_status.strip().lower() == "manager review":
-            print("🚀 Triggering Manager Notification")
+            print("Triggering Manager Notification")
 
             stepfunctions.start_execution(
                 stateMachineArn=STATE_MACHINE_ARN,
@@ -89,7 +89,7 @@ def lambda_handler(event, context):
                 })
             )
         elif new_status and new_status.strip().lower() == "rejected":
-            print("🚀 Triggering Rejection Email")
+            print("Triggering Rejection Email")
 
             stepfunctions.start_execution(
                 stateMachineArn=STATE_MACHINE_ARN,
@@ -101,7 +101,7 @@ def lambda_handler(event, context):
             )
 
         elif new_status and new_status.strip().lower() == "offer extended":
-            print("🚀 Triggering Offer Email")
+            print("Triggering Offer Email")
 
             stepfunctions.start_execution(
                 stateMachineArn=STATE_MACHINE_ARN,
@@ -114,7 +114,7 @@ def lambda_handler(event, context):
 
 
         elif new_status and new_status.strip().lower() == "rejected":
-            print("🚀 Triggering Manager Rejection Email")
+            print("Triggering Manager Rejection Email")
 
             stepfunctions.start_execution(
                 stateMachineArn=STATE_MACHINE_ARN,
@@ -126,7 +126,7 @@ def lambda_handler(event, context):
             )
 
         else:
-            print("❌ Condition not matched for Step Function")
+            print("Condition not matched for Step Function")
 
         return {
             "statusCode": 200,
@@ -141,7 +141,7 @@ def lambda_handler(event, context):
         }
 
     except Exception as e:
-        print("❌ ERROR:", str(e))
+        print("ERROR:", str(e))
         return {
             "statusCode": 500,
             "body": json.dumps({"error": "Failed to update candidate"})
