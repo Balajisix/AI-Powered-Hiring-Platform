@@ -21,8 +21,8 @@ def lambda_handler(event, context):
         # 2. Fetch all candidates and count per job_id
         candidates = candidates_table.scan().get('Items', [])
         
-        total_count = defaultdict(int)      # all candidates per job
-        ai_screened_count = defaultdict(int) # candidates with ai_score > 0
+        total_count = defaultdict(int)   
+        ai_screened_count = defaultdict(int)
 
         for c in candidates:
             job_id = c.get('job_id')
