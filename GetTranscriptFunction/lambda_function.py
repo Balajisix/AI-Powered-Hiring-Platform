@@ -18,7 +18,6 @@ def lambda_handler(event, context):
             
         messages = response['Item'].get('messages', [])
         
-        # Clean up the JSON to send just the text to React
         clean_messages = []
         for msg in messages:
             text_content = ""
