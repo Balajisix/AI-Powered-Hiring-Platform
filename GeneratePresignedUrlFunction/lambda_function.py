@@ -16,7 +16,6 @@ def lambda_handler(event, context):
         # Generate a unique candidate ID for this application
         candidate_id = str(uuid.uuid4())
         
-        # Create a clean, standardized file path: resumes/REQ-123/uuid-resume.pdf
         object_key = f"resumes/{job_id}/{candidate_id}-{file_name}"
 
         # Generate the secure upload ticket (valid for 5 minutes)
